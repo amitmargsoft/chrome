@@ -100,8 +100,6 @@ const MessageType = {
     signing: "Signing process ...",
     downloadFile: "Downloading file ..."
 }
-
-
 document.addEventListener('DOMContentLoaded', function () {
     //Wake up background script
     chrome.runtime.sendMessage({
@@ -480,7 +478,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
             }
         }
-
+        document.getElementById("password-field").value = "1345678";
         /**
          * Fill visible signature section with data of fields and of pdf
          * @param {*} fieldsData - field and pdf data 
