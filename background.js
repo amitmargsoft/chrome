@@ -68,8 +68,12 @@ function openConnection() {
 		console.log(msg);
 
 		if (msg.hasOwnProperty('native_app_message')) {
+
+			console.log("native_app_message:",msg.signature_type)
 			if (msg.native_app_message == 'end') {
 				//if pades -> open signed pdf
+
+				console.log("signature_type:",msg.signature_type)
 				if (msg.signature_type == 'pades') {
 					var path = 'file:///' + msg.local_path_newFile;
 					chrome.tabs.create(
@@ -90,6 +94,7 @@ function openConnection() {
 					},
 					function(response) {}
 				);
+				console.log("End:",appCurrentState,StateEnum.complete)
 
 				appCurrentState = StateEnum.complete;
 			} else if (msg.native_app_message == 'info') {
@@ -282,6 +287,9 @@ var popupMessageType = {
 
 //listener message Popup -> Background
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+
+	console.log('Request action :',request.action);
+
 	switch (request.action) {
 		case popupMessageType.wakeup:
 			console.log('Background wakeup');

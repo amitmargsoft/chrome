@@ -163,10 +163,12 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         confirmBtn.addEventListener('click', () => {
+            
+            console.log('MessageType.signing: ',MessageType.signing)
             getTabData(sign);
             console.log(sign)
             showLoading(MessageType.signing);
-            alert()
+            
             // sections.changeSection(sections.section.loadingSection);
         });
 
@@ -458,12 +460,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 }, function (tab) {
                     var pdfURL = tab[0].url;
                     signatureData.tabUrl = tab[0].url;
-                    console.log(pdfURL);
+                    console.log("PDF URL ",pdfURL);
                     if (pdfURL.startsWith("file:///")) {
                         // file is local
                         pdfURL = pdfURL.substr("file:///".length);
                         console.log("File is local:");
-                        console.log(pdfURL);
+                        console.log("File is ",pdfURL);
                         //restore all space that browser transform in
                         pdfURL = pdfURL.replace(/%20/g, ' ');
                         signatureData.filename = pdfURL;
@@ -472,7 +474,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         tabData.location = "remote";
                     }
                     tabData.url = pdfURL;
-                    console.log(tabData);
+                    console.log("Tabe Data",tabData);
                     if (callback)
                         callback(tabData);
                 });
@@ -489,7 +491,7 @@ document.addEventListener('DOMContentLoaded', function () {
             nextBtn.disabled = true;
             closeBtn.classList.remove("hidden");
             clearBtn.classList.remove("hidden");
-            console.log(fieldsData);
+            console.log("updateSignatureFieldList",fieldsData);
 
             if (fieldsData.fields == undefined || fieldsData.fields.length == 0) {
                 useFieldSwitchCheckbox.disabled = true;
@@ -545,7 +547,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     tabid: tab[0].id
                 }, function (response) {
                     console.log("<<< received:")
-                    console.log(response);
+                    console.log("response",response);
                 });
 
                 //set data for content script
@@ -573,7 +575,7 @@ document.addEventListener('DOMContentLoaded', function () {
          * @param {string} localFilePath - local path of signed file
          */
         function endSectionUIUpdate(localFilePath) {
-            console.log(localFilePath);
+            console.log("endSectionUIUpdate",localFilePath);
             hideConfirmButtonSection();
             const completeInfo = document.getElementById("complete-info");
             completeInfo.classList.remove("hide");
@@ -586,7 +588,7 @@ document.addEventListener('DOMContentLoaded', function () {
          * Fill loading message section and show it
          * @param {string} message - loading message to show
          */
-        function showLoading(message) {
+        function showLoading(message) {           
             hideConfirmButtonSection();
             loadingMsg.textContent = message;
             sections.changeSection(sections.section.loadingSection);
@@ -616,7 +618,7 @@ document.addEventListener('DOMContentLoaded', function () {
         chrome.runtime.onMessage.addListener(
             function (request, sender, sendResponse) {
                 console.log("<<< received:")
-                console.log(request);
+                console.log("request",request);
 
                 if (request.hasOwnProperty("state")) {
                     switch (request.state) {

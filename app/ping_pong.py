@@ -5,8 +5,19 @@ import os
 import json
 import struct
 import logging
-log = os.path.join("C:/Users/Amit/Desktop/extension/dev/app/", 'log.log')
-logging.basicConfig(filename=log,encoding='utf-8', level=logging.DEBUG)
+import sys
+from exe import signer
+
+
+log = os.path.join("C:/Users/Amit/Desktop/extension/dev/app/",
+                   'log-native.log')
+logging.basicConfig(
+    filename=log,
+    encoding='utf-8',
+    level=logging.DEBUG,
+    format=
+    '[%(asctime)s.%(msecs)03d] [ %(levelname)s ] %(module)s - %(funcName)s: %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S')
 logger = logging.getLogger('client')
 logger.info('Server')
 try:
@@ -14,12 +25,11 @@ try:
     # Read a message from stdin and decode it.
     def getMessage():
         logger.info('getMessage is calling')
-        rawLength = sys.stdin.buffer.read()
+        rawLength = sys.stdin.buffer.read(4)
         if len(rawLength) == 0:
             sys.exit(0)
         messageLength = struct.unpack('@I', rawLength)[0]
         message = sys.stdin.buffer.read(messageLength).decode('utf-8')
-        logger.debug(message)
         return json.loads(message)
 
     # Encode a message for transmission,
@@ -39,14 +49,25 @@ try:
 
     while True:
         logger.debug("Requeset for ping")
-        
+
         receivedMessage = getMessage()
         #if receivedMessage == "ping":
-        sendMessage(encodeMessage({"native_app_message":"end","signature_type":"pades"}))
-        logger.debug("Response for pong3") 
-        logger.debug(json.dumps(receivedMessage))    
+        signerData = signer.main(receivedMessage['filename'])
+        response = {
+            "native_app_message": "pades",
+            "signature_type": "pades",
+            "local_path_newFile": receivedMessage['filename'],
+            "input": receivedMessage,
+            "error": "erroring",
+            "singedData":signerData
+        }
+        sendMessage(encodeMessage(response))
+        logger.debug("Response for pong3")
+        
+        logger.debug(json.dumps(receivedMessage))
 except AttributeError:
-    logger.error("somethin error") 
+    logger.error("somethin error")
+
     # Python 2.x version (if sys.stdin.buffer is not defined)
     # Read a message from stdin and decode it.
     def getMessage():
