@@ -100,10 +100,10 @@ class Signer(Singers):
         return self.name
 
 
-def main(filename):
+def main(filename,password,dllpath):
+    result = {}
     signature = "Digitally Signed by:$name \n Reason: I'm the author \n Location: India \n Date: "
-    dllpath = "c:/windows/system32/eps2003csp11.dll"
-    password = "12345678"
+    dllpath = "c:/windows/system32/"+dllpath
     logging.info("Requset for sign")
     dates = datetime.datetime.utcnow() - datetime.timedelta(hours=12)
     date = dates.strftime('%Y%m%d%H%M%S+00\'00\'')
@@ -129,8 +129,12 @@ def main(filename):
     singedFileName = tik_docuspdf
 
     input_pdf = PyPDF2.PdfFileReader(filename, "rb")
+    documentInfo = input_pdf.getDocumentInfo()
     totalPages = input_pdf.getNumPages()
     p = input_pdf.getPage(0)
+    result['documentInfo'] = documentInfo
+    result['totalPages'] = totalPages
+
     print("Total Pgae:", totalPages)
 
     w_page = p.mediaBox.getWidth()
@@ -172,12 +176,16 @@ def main(filename):
 
     logging.info('Trying to create singed pdf')
     fname = fname.replace('.pdf', '_signed.pdf')
-    singedFileName = singedFileName.replace('.pdf', 'signed.pdf')
     with open(fname, 'wb') as fp:
         fp.write(datau)
         fp.write(datas)
-    return {"fname": fname, "singedFileName": singedFileName}
+
+    result["tik_signed_file"] =  fname  
+    result["tik_file"] =  tik_docuspdf  
+    return result
 
 
 if __name__ == '__main__':
-    main('sample.pdf')
+    password = "12345678"
+    dllpath = 'c:/windows/system32/eps2003csp11.dll'
+    main('sample.pdf',password,dllpath)

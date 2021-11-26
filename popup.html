@@ -22,7 +22,7 @@
       <div id="select-signature-type-section" class="step current-step start-trasform-sign-type	">
         <p>Select signature type:</p>
         <div class="buttons has-addons is-centered">
-          <button data-signature-type='pades' id="pades-btn" class="button is-info is-outlined signature-type-btns">PAdES</button>
+          <button data-signature-type='pades' disabled id="pades-btn" title="This feature is disabled" class="button is-info is-outlined signature-type-btns">PAdES</button>
           <button data-signature-type='cades' id="cades-btn" class="button is-info is-outlined signature-type-btns">CAdES</button>
         </div>
 
@@ -34,6 +34,20 @@
 
       <!-- STEP 2 - Cades or not visible Pades -->
       <div id="pass" class="step hide">
+
+        <div class="field">
+          <p class="control has-icons-left">
+            <select name="dllpass-field" id="dllpass-field" class="input" style="width:224px">
+              <option value="eps2003csp11.dll">ePass2003</option>
+              <option value="SignatureP11.dll">Watchdata PROXkey</option>
+              <option value="CryptoIDA_pkcs11.dll">Cryptocard</option>
+            </select>
+            <span class="icon is-small is-left">
+              <i class="fas fa-usb"></i>
+            </span>
+          </p>
+        </div>
+
         <div class="field">
           <p class="control has-icons-left">
             <input id="password-field" class="input" type="password" placeholder="Password" value="1345678">
