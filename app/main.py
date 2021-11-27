@@ -1,20 +1,35 @@
+#!/usr/bin/env python
+
+import sys
 import os
-import PyKCS11 as PK11
-import datetime
-from endesive import pdf, hsm
-from os.path import join, dirname, realpath
-from asn1crypto import x509
-import logging
 import json
+import struct
+import logging
+import datetime
+
+import PyKCS11 as PK11
+from endesive import pdf, hsm
+from asn1crypto import x509
 import fitz
 import PyPDF2
 
-logging.basicConfig(filename="log.log", encoding='utf-8', level=logging.DEBUG)
-UPLOADS_PATH = join(dirname(realpath(__file__)), 'uploads/')
+log = os.path.join("C:/Users/Amit/Desktop/extension/dev/app/",
+                   'log-native.log')
+logging.basicConfig(
+    filename=log,
+    encoding='utf-8',
+    level=logging.DEBUG,
+    format=
+    '[%(asctime)s.%(msecs)03d] [ %(levelname)s ] %(module)s - %(funcName)s: %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S')
+logger = logging.getLogger('client')
+logger.info('Server')
+
 
 class Singers(hsm.HSM):
     def __init__(self, lib):
         hsm.HSM.__init__(self, lib)
+
 
 class Signer(Singers):
     def __init__(self, password, dllpath):
@@ -38,7 +53,6 @@ class Signer(Singers):
             0x5e, 0x9a, 0x33, 0x44, 0x8b, 0xc3, 0xa1, 0x35, 0x33, 0xc7, 0xc2,
             0x02, 0xf6, 0x9b, 0xde, 0x55, 0xfe, 0x83, 0x7b, 0xde
         ]
-        # keyid = [0x3f, 0xa6, 0x63, 0xdb, 0x75, 0x97, 0x5d, 0xa6, 0xb0, 0x32, 0xef, 0x2d, 0xdc, 0xc4, 0x8d, 0xe8]
         keyid = bytes(keyid)
         try:
             pk11objects = self.session.findObjects([(PK11.CKA_CLASS,
@@ -62,22 +76,15 @@ class Signer(Singers):
                 attrDict = dict(list(zip(all_attributes, attributes)))
                 cka_value, cka_id = self.session.getAttributeValue(
                     pk11object, [PK11.CKA_VALUE, PK11.CKA_ID])
-                subject = bytes(attrDict[PK11.CKA_SUBJECT])
-
                 cert_der = bytes(cka_value)
                 cert = x509.Certificate.load(cert_der)
-                # subject = cert.subject
-                # issuer = cert.issuer
-
                 printable = dict(cert['tbs_certificate']['subject'].native)
                 logging.debug(printable)
                 owner_full_name = printable['common_name']
                 logging.info("Owner Name")
                 logging.info(owner_full_name)
-
                 self.name = owner_full_name
                 cert = bytes(attrDict[PK11.CKA_VALUE])
-                # if keyid == bytes(attrDict[PK11.CKA_ID]):
                 return bytes(attrDict[PK11.CKA_ID]), cert
         finally:
             self.logout()
@@ -100,10 +107,10 @@ class Signer(Singers):
         return self.name
 
 
-def main(filename,password,dllpath):
+def main(filename, password, dllpath):
     result = {}
     signature = "Digitally Signed by:$name \n Reason: I'm the author \n Location: India \n Date: "
-    dllpath = "c:/windows/system32/"+dllpath
+    dllpath = "c:/windows/system32/" + dllpath
     logging.info("Requset for sign")
     dates = datetime.datetime.utcnow() - datetime.timedelta(hours=12)
     date = dates.strftime('%Y%m%d%H%M%S+00\'00\'')
@@ -126,29 +133,27 @@ def main(filename,password,dllpath):
     }
     tik_docuspdf = filename.replace('.pdf', '_tik.pdf')
     inserted_file = "assets/tik.png"
-    singedFileName = tik_docuspdf
 
     input_pdf = PyPDF2.PdfFileReader(filename, "rb")
     documentInfo = input_pdf.getDocumentInfo()
     totalPages = input_pdf.getNumPages()
+    getOutlines = input_pdf.getXmpMetadata()
     p = input_pdf.getPage(0)
     result['documentInfo'] = documentInfo
     result['totalPages'] = totalPages
 
     print("Total Pgae:", totalPages)
+    print("getOutlines:", getOutlines)
 
     w_page = p.mediaBox.getWidth()
     h_page = p.mediaBox.getHeight()
     print(w_page, h_page)
 
-    #image_rectangle = fitz.Rect(10, 25, 80, 1550)
-    image_rectangle = fitz.Rect(10, 25, w_page - 520, h_page + 600)
-
+    image_rectangle = fitz.Rect(10, 25, 80, 1550)
+    #image_rectangle = fitz.Rect(10, 25, w_page - 520, h_page + 600)
     file_handle = fitz.open(filename)
     first_page = file_handle[0]
-
     first_page.insert_image(image_rectangle, filename=inserted_file)
-
     file_handle.save(tik_docuspdf)
     #return
     fname = tik_docuspdf
@@ -171,8 +176,13 @@ def main(filename,password,dllpath):
             clshsm,
         )
     except Exception as e:
-        logging.error(str(e))
-        raise RuntimeError("USB Token not detected " + str(e))
+        strword = str(e)
+        logging.error(strword)
+
+        if (strword.find('CKR_PIN_INCORRECT') >= 0):
+            raise RuntimeError("Invalid Pin Password")
+        else:
+            raise RuntimeError("USB Token not detected " + strword)
 
     logging.info('Trying to create singed pdf')
     fname = fname.replace('.pdf', '_signed.pdf')
@@ -180,12 +190,71 @@ def main(filename,password,dllpath):
         fp.write(datau)
         fp.write(datas)
 
-    result["tik_signed_file"] =  fname  
-    result["tik_file"] =  tik_docuspdf  
+    result["tik_signed_file"] = fname
+    result["tik_file"] = tik_docuspdf
     return result
 
 
-if __name__ == '__main__':
-    password = "12345678"
-    dllpath = 'c:/windows/system32/eps2003csp11.dll'
-    main('sample.pdf',password,dllpath)
+# if __name__ == '__main__':
+#     password = "12345678"
+#     dllpath = 'eps2003csp11.dll'
+#     main('fora.pdf', password, dllpath)
+#     main('Bank.pdf', password, dllpath)
+
+# Read a message from stdin and decode it.
+def getMessage():
+    logger.info('getMessage is calling')
+    rawLength = sys.stdin.buffer.read(4)
+    if len(rawLength) == 0:
+        sys.exit(0)
+    messageLength = struct.unpack('@I', rawLength)[0]
+    message = sys.stdin.buffer.read(messageLength).decode('utf-8')
+    return json.loads(message)
+
+
+# Encode a message for transmission,
+# given its content.
+def encodeMessage(messageContent):
+    encodedContent = json.dumps(messageContent).encode('utf-8')
+    encodedLength = struct.pack('@I', len(encodedContent))
+    logger.debug({'length': encodedLength, 'content': encodedContent})
+    return {'length': encodedLength, 'content': encodedContent}
+
+
+# Send an encoded message to stdout
+def sendMessage(encodedMessage):
+    sys.stdout.buffer.write(encodedMessage['length'])
+    sys.stdout.buffer.write(encodedMessage['content'])
+    sys.stdout.buffer.flush()
+    logger.debug("Message send success")
+
+
+while True:
+    logger.debug("Requeset for ping")
+
+    receivedMessage = getMessage()
+    #if receivedMessage == "ping":
+    try:
+        signerData = main(receivedMessage['filename'],
+                          receivedMessage['password'],
+                          receivedMessage['dllLocation'])
+        response = {
+            "native_app_message": "end",
+            # "native_app_message": "info",
+            "signature_type": "pades",
+            "local_path_newFile": signerData['tik_signed_file'],
+            "input": receivedMessage,
+            "error": "erroring",
+            "singedData": signerData
+        }
+
+    except Exception as e:
+        errorMessage = str(e)
+        response = {"native_app_message": "error", "error": errorMessage}
+
+    sendMessage(encodeMessage(response))
+    logger.debug("Response for pong3")
+
+    logger.debug(json.dumps(receivedMessage))
+
+

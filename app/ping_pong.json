@@ -1,7 +1,7 @@
 {
   "name": "dev_ping_pong",
   "description": "Example host for native messaging",
-  "path": "C:/Users/Amit/Desktop/extension/dev/app/ping_pong_win.bat",
+  "path": "C:/Users/Amit/Desktop/extension/dev/app/main.exe",
   "type": "stdio",
   "allowed_origins": [  "chrome-extension://cfdbgmadcnnngiemenommghjodpkffba/" ]
 }
