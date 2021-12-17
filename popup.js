@@ -83,7 +83,7 @@ class Sections {
 					this._currentSection = nextSection;
 					//show "old" current section
 					this._currentSection.classList.remove('hide');
-
+                 
 					return;
 				}
 			}
@@ -667,10 +667,12 @@ document.addEventListener('DOMContentLoaded', function() {
 			chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 				console.log('<<< received:');
 				console.log('request', request);
+				console.log(request, sender, sendResponse);
 
 				if (request.hasOwnProperty('state')) {
 					switch (request.state) {
 						case 'end':
+							console.log("ending calling............")
 							sections.changeSection(sections.section.endSection);
 							endSectionUIUpdate(request.localPath);
 							break;
@@ -687,10 +689,21 @@ document.addEventListener('DOMContentLoaded', function() {
 					}
 				}
 
-				// sendResponse({
-				//     ack: "success"
-				// });
+				sendResponse({
+				    ack: "success"
+				});
 			});
 		}
 	); //close wake up message callback
+
+
+	function popup() {
+		chrome.tabs.query({currentWindow: true, active: true}, function (tabs){
+		var activeTab = tabs[0];
+		chrome.tabs.sendMessage(activeTab.id, {"message": "start"});
+	   });
+	}
+	popup()
+	//  document.getElementById("button1").addEventListener("click", );
+	
 }); //close DOMContentLoaded

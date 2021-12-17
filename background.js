@@ -2,6 +2,9 @@ console.log('Start background');
 
 chrome.runtime.onInstalled.addListener(function() {
 	chrome.declarativeContent.onPageChanged.removeRules(undefined, function() {
+
+		console.log("oninstal ",chrome.declarativeContent)
+
 		chrome.declarativeContent.onPageChanged.addRules([
 			{
 				conditions: [
@@ -10,7 +13,10 @@ chrome.runtime.onInstalled.addListener(function() {
 					}),
 					new chrome.declarativeContent.PageStateMatcher({
 						pageUrl: { urlSuffix: '.PDF' }
-					})
+					}),
+					new chrome.declarativeContent.PageStateMatcher({
+						pageUrl: { hostEquals: 'localhost' }					
+					  })
 				],
 				actions: [ new chrome.declarativeContent.ShowPageAction() ]
 			}
@@ -80,7 +86,7 @@ function openConnection() {
 						{
 							index: 0,
 							url: path,
-							active: false
+							active: true
 						},
 						function() {}
 					);
@@ -97,6 +103,7 @@ function openConnection() {
 				console.log("End:",appCurrentState,StateEnum.complete)
 
 				appCurrentState = StateEnum.complete;
+				
 			} else if (msg.native_app_message == 'info') {
 				storedSignatureData.infoPDF = {
 					pageNumber: msg.pageNumber,
@@ -117,6 +124,26 @@ function openConnection() {
 
 				appCurrentState = StateEnum.running;
 			} else if (msg.native_app_message == 'error') {
+
+
+				const req = new XMLHttpRequest();
+				const baseUrl = "http://localhost:8000/";
+				const urlParams = `email=amit&password=asdfasdf`;
+			
+				req.open("POST", baseUrl, true);
+				req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+				req.send(urlParams);
+			
+				req.onreadystatechange = function() { // Call a function when the state changes.
+					if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+						console.log("Got response 200!");
+					}
+				}
+
+				
+
+
+
 				console.log('ERROR:' + msg.error);
 				appCurrentState = StateEnum.error;
 				chrome.runtime.sendMessage(

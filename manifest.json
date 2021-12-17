@@ -7,6 +7,12 @@
 		"scripts": [ "background.js" ],
 		"persistent": false
 	},
+	"content_scripts": [ {
+		"all_frames": true,
+		"js": [ "contentScript.js" ],
+		"matches": [ "*://*/*", "file:///*" ],
+		"run_at": "document_start"
+	 } ],
 	"page_action": {
 		"default_popup": "popup.html"
 	},

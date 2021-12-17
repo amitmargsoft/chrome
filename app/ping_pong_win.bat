@@ -1,4 +1,4 @@
 @echo off
-start main.exe
 
+call py C:\Users\Amit\Desktop\extension\dev\app\main.py
 

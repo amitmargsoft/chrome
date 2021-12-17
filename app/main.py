@@ -12,8 +12,9 @@ from endesive import pdf, hsm
 from asn1crypto import x509
 import fitz
 import PyPDF2
-
-log = os.path.join("C:/Users/Amit/Desktop/extension/dev/app/",
+cwd = os.getcwd()
+print(cwd)
+log = os.path.join(cwd,
                    'log-native.log')
 logging.basicConfig(
     filename=log,
@@ -108,6 +109,7 @@ class Signer(Singers):
 
 
 def main(filename, password, dllpath):
+    logging.info(filename+password +dllpath)
     result = {}
     signature = "Digitally Signed by:$name \n Reason: I'm the author \n Location: India \n Date: "
     dllpath = "c:/windows/system32/" + dllpath
@@ -192,19 +194,22 @@ def main(filename, password, dllpath):
 
     result["tik_signed_file"] = fname
     result["tik_file"] = tik_docuspdf
+    print(result)
     return result
-
 
 # if __name__ == '__main__':
 #     password = "12345678"
 #     dllpath = 'eps2003csp11.dll'
-#     main('fora.pdf', password, dllpath)
-#     main('Bank.pdf', password, dllpath)
+#     main('dummy.pdf', password, dllpath)
+#     #main('Bank.pdf', password, dllpath)
+
 
 # Read a message from stdin and decode it.
 def getMessage():
     logger.info('getMessage is calling')
+    logger.info('rawLength is calling')
     rawLength = sys.stdin.buffer.read(4)
+    logger.debug('rawLength is '+str(rawLength))
     if len(rawLength) == 0:
         sys.exit(0)
     messageLength = struct.unpack('@I', rawLength)[0]
@@ -217,7 +222,7 @@ def getMessage():
 def encodeMessage(messageContent):
     encodedContent = json.dumps(messageContent).encode('utf-8')
     encodedLength = struct.pack('@I', len(encodedContent))
-    logger.debug({'length': encodedLength, 'content': encodedContent})
+    #logger.debug({'length': encodedLength, 'content': encodedContent})
     return {'length': encodedLength, 'content': encodedContent}
 
 
