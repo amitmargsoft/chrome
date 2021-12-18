@@ -1,6 +1,0 @@
-[ 
-    { "token": "--Choose USB Token Type--", "pathFile": "None", "index": 0 },
-    { "token": "Cryptocard", "pathFile": "c:\\windows\\system32\\CryptoIDA_pkcs11.dll", "index": 1 },
-    { "token": "EPass", "pathFile": "c:\\windows\\system32\\eps2003csp11.dll", "index": 2 },
-    { "token": "Watchdata PROXkey", "pathFile": "c:\\windows\\system32\\SignatureP11.dll", "index": 3 }
-]
